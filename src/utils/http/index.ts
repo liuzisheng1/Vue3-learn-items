@@ -35,9 +35,9 @@ export class Request {
   }
 
   async requestInterceptor(config: AxiosRequestConfig): Promise<any> {
+    axiosCancel.addPending(config)
     // 这里可以添加逻辑，如果需要的话
     // await TokenOrManager.ensureValidRefreshTokens(config)
-    axiosCancel.addPending(config)
     return config
   }
 

@@ -13,7 +13,6 @@
 import { requestIndex } from "@/api"
 const handleCurrentChange = async () => {
   const res = await requestIndex()
-  console.log(res, 'console.log(import.meta.env, "Hello World!")')
 }
 </script>
 

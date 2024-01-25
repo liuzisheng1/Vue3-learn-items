@@ -18,9 +18,8 @@ export class AxiosCancel {
    * @param config Axios的请求配置
    */
   addPending(config: AxiosRequestConfig) {
-    // this.removePending(config)
-    const url = getPendingUrl(config)
-    if (pendingMap.has(url)) {
+    const requestKey = getPendingUrl(config)
+    if (pendingMap.has(requestKey)) {
       config.cancelToken = new axios.CancelToken((cancel) => {
         // cancel 函数的参数会作为 promise 的 error 被捕获
         cancel(`${config.url} 请求已取消`)
@@ -29,7 +28,7 @@ export class AxiosCancel {
       config.cancelToken =
         config.cancelToken ||
         new axios.CancelToken((cancel) => {
-          pendingMap.set(url, cancel)
+          pendingMap.set(requestKey, cancel)
         })
     }
   }
@@ -50,12 +49,12 @@ export class AxiosCancel {
    */
   removePending(config: AxiosRequestConfig) {
     if (!config) return
-    const url = getPendingUrl(config)
-    if (pendingMap.has(url)) {
+    const requestKey = getPendingUrl(config)
+    if (pendingMap.has(requestKey)) {
       // 如果在 pending 中存在当前请求标识，需要取消当前请求，并且移除
-      const cancel = pendingMap.get(url)
-      cancel && cancel(url)
-      pendingMap.delete(url)
+      const cancel = pendingMap.get(requestKey)
+      cancel && cancel(requestKey)
+      pendingMap.delete(requestKey)
     }
   }
 }
