@@ -22,23 +22,20 @@
 
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@/stores*": [
-        "./src/stores*"
-      ],
-      "@/components*": [
-        "./src/components*"
-      ],
-      "@/modules*": [
-        "./src/modules*"
-      ],
-      "@/utils*": [
-        "./src/utils*"
-      ]
+      "@/*": ["./src/*"],
+      "@/stores*": ["./src/stores*"],
+      "@/components*": ["./src/components*"],
+      "@/modules*": ["./src/modules*"],
+      "@/utils*": ["./src/utils*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src"],
+  "include": [
+    "env.d.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "src",
+    "auto-imports.d.ts"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

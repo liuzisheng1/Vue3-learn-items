@@ -9,13 +9,11 @@ import axios from "axios"
 import TokenManager from "@/utils/http/token-manager"
 import { checkStatus } from "@/utils/http/check-status"
 
-import { authErrMap } from "@/enum"
-
 export type Response<T> = Promise<[boolean, T, AxiosResponse<T>]>
+export const TokenOrManager = new TokenManager()
 
 export class Request {
   private readonly axiosInstance: AxiosInstance
-  private TokenManager: TokenManager
 
   constructor(options: AxiosRequestConfig) {
     this.axiosInstance = axios.create(options)
@@ -27,12 +25,11 @@ export class Request {
       (response: AxiosResponse) => this.responseSuccessInterceptor(response),
       (error) => this.responseErrorInterceptor(error)
     )
-    this.TokenManager = new TokenManager()
   }
 
   async requestInterceptor(config: AxiosRequestConfig | AxiosHeaders): Promise<any> {
     // 这里可以添加逻辑，如果需要的话
-    // await this.TokenManager.ensureValidRefreshTokens(config)
+    // await TokenManager.ensureValidRefreshTokens(config)
     return config
   }
 
@@ -53,9 +50,10 @@ export class Request {
     const { status } = error?.response || {}
     try {
       checkStatus(status)
-
+      console.log("Response Error:", error)
+      // await this.axiosInstance(error?.config)
       // if (status === 401) {
-      //   await this.TokenManager.refreshTokens()
+      //   await TokenManager.refreshTokens()
       //   return this.axiosInstance(error?.config)
       // }
     } catch (error) {

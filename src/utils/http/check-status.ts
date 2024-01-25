@@ -21,7 +21,7 @@ export const checkStatus = (errStatus: number) => {
         errMessage = "请求超时"
         break
       case 500:
-        errMessage = "服务器端出错"
+        errMessage = "服务器端出错, 请联系管理员"
         break
       case 501:
         errMessage = "网络未实现"
@@ -44,5 +44,5 @@ export const checkStatus = (errStatus: number) => {
   } else {
     errMessage = `无法连接到服务器！`
   }
-  window.$message(errMessage)
+  ElMessage.error(errMessage)
 }
