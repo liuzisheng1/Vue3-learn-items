@@ -6,6 +6,7 @@ import type {
   AxiosHeaders
 } from "axios"
 import axios from "axios"
+import axiosRetry from "axios-retry"
 import TokenManager from "@/utils/http/token-manager"
 import { checkStatus } from "@/utils/http/check-status"
 
@@ -17,6 +18,15 @@ export class Request {
 
   constructor(options: AxiosRequestConfig) {
     this.axiosInstance = axios.create(options)
+    // 配置axios-retry
+    axiosRetry(this.axiosInstance, {
+      retries: 2, // 设置最大重试次数
+      retryDelay: (retryCount) => retryCount * 1000, // 设置每次重试间隔时间
+      retryCondition: (error: AxiosError): boolean => {
+        // 自定义重试条件
+        return Boolean(error?.response && error?.response?.status >= 500)
+      }
+    })
     this.axiosInstance.interceptors.request.use(
       (axiosConfig: AxiosRequestConfig | AxiosHeaders) => this.requestInterceptor(axiosConfig),
       (error) => this.requestErrorInterceptor(error)
