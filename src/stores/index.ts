@@ -1,1 +1,3 @@
-import { useCounterStore } from "@/stores/modules/counter.ts"
+import { userStore } from "@/stores/modules/user.ts"
+
+export { userStore }

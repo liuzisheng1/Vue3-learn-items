@@ -2,6 +2,7 @@ import { LOGIN_URL, LOGOUT_URL, REFRESH_TOKEN_URL } from "@/constants"
 import type { Login } from "@/types"
 import type { AxiosRequestConfig, AxiosResponse, AxiosHeaders } from "axios"
 import axios from "axios"
+import { userStore } from "@/stores"
 
 // 配置额外的请求头接口
 
@@ -17,35 +18,6 @@ class TokenManager {
     this.accessToken = undefined
     this.refreshToken = undefined
     this.expiresIn = undefined
-  }
-
-  // 登录方法，获取token相关数据
-  async login(params: Login): Promise<void> {
-    try {
-      const response = await axios.post(LOGIN_URL, params)
-      const { accessToken, refreshToken, expiresIn } = response.data.result
-      this.accessToken = accessToken
-      this.refreshToken = refreshToken
-      this.expiresIn = parseInt(expiresIn)
-    } catch (error) {
-      console.error("Login failed:", error)
-      throw new Error("Login failed")
-    }
-  }
-
-  // 登出方法，清除token信息
-  async logout(): Promise<void> {
-    // 可以考虑清除本地存储中的token，并发送登出请求
-    this.accessToken = undefined
-    this.refreshToken = undefined
-    this.expiresIn = undefined
-
-    try {
-      await axios.post(LOGOUT_URL)
-    } catch (error) {
-      console.error("Logout failed:", error)
-      throw new Error("Logout failed")
-    }
   }
 
   // 刷新token方法，通过refreshToken获取新的accessToken

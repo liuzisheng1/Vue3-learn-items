@@ -23,3 +23,10 @@ export enum PageEnum {
   // 错误
   ERROR_PAGE_NAME = "ErrorPage"
 }
+
+export enum ResultEnum {
+  SUCCESS = 200,
+  ERROR = -1,
+  TIMEOUT = 10042,
+  TYPE = "success"
+}

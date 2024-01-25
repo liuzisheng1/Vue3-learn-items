@@ -1,1 +1,1 @@
-export { AuthErrMap, PageEnum } from "./modules/http-enum"
+export { AuthErrMap, PageEnum, ResultEnum } from "./modules/http-enum"

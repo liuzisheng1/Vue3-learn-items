@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig, Canceler } from "axios"
 import { isFunction } from "lodash-es"
 import { isJsonString } from "@/utils/is-method.ts"
 import { stringify } from "qs"
-
+// 取消重复请求： 完全相同的接口在上一个pending状态时，自动取消下一个请求
 export const getPendingUrl = (config: AxiosRequestConfig) => {
   if (config && config.data && isJsonString(config.data)) {
     config.data = JSON.parse(config.data)
@@ -10,9 +10,8 @@ export const getPendingUrl = (config: AxiosRequestConfig) => {
   const { method, url, params, data } = config // 请求方式，参数，请求地址，
   return [method, url, stringify(params), stringify(data)].join("&") // 拼接
 }
-const pendingMap = new Map<string, Canceler>()
+const pendingMap = new Map<string, Canceler>() // 取消重复请求
 export class AxiosCancel {
-  // public pendingMap = new Map<string, Canceler>()
   /**
    * 添加挂起的请求配置
    * @param config Axios的请求配置
