@@ -1,17 +1,14 @@
-import type {
-  AxiosRequestConfig,
-  AxiosInstance,
-  AxiosResponse,
-  AxiosError,
-  AxiosHeaders
-} from "axios"
+import type { AxiosRequestConfig, AxiosInstance, AxiosResponse, AxiosError } from "axios"
 import axios from "axios"
 import axiosRetry from "axios-retry"
 import TokenManager from "@/utils/http/token-manager"
 import { checkStatus } from "@/utils/http/check-status"
+import { AxiosCancel } from "@/utils/http/axios-cancel"
 
 export type Response<T> = Promise<[boolean, T, AxiosResponse<T>]>
+
 export const TokenOrManager = new TokenManager()
+export const axiosCancel = new AxiosCancel()
 
 export class Request {
   private readonly axiosInstance: AxiosInstance
@@ -28,7 +25,7 @@ export class Request {
       }
     })
     this.axiosInstance.interceptors.request.use(
-      (axiosConfig: AxiosRequestConfig | AxiosHeaders) => this.requestInterceptor(axiosConfig),
+      (axiosConfig: AxiosRequestConfig) => this.requestInterceptor(axiosConfig),
       (error) => this.requestErrorInterceptor(error)
     )
     this.axiosInstance.interceptors.response.use(
@@ -37,9 +34,10 @@ export class Request {
     )
   }
 
-  async requestInterceptor(config: AxiosRequestConfig | AxiosHeaders): Promise<any> {
+  async requestInterceptor(config: AxiosRequestConfig): Promise<any> {
     // 这里可以添加逻辑，如果需要的话
-    // await TokenManager.ensureValidRefreshTokens(config)
+    // await TokenOrManager.ensureValidRefreshTokens(config)
+    axiosCancel.addPending(config)
     return config
   }
 
@@ -49,6 +47,7 @@ export class Request {
   }
 
   responseSuccessInterceptor(response: AxiosResponse): any {
+    response && axiosCancel.removePending(response.config)
     const { status, data } = response
     if (status !== 200) return Promise.reject(data)
     ElMessage.success("请联系管理员1")
@@ -57,6 +56,7 @@ export class Request {
   }
 
   private async responseErrorInterceptor(error: any): Promise<any> {
+    axiosCancel.removePending(error?.config)
     const { status } = error?.response || {}
     try {
       checkStatus(status)
