@@ -4,6 +4,7 @@ import axiosRetry from "axios-retry"
 import TokenManager from "@/utils/http/token-manager"
 import { checkStatus } from "@/utils/http/check-status"
 import { AxiosCancel } from "@/utils/http/axios-cancel"
+import { useUser } from "@/stores/index.ts"
 
 export type Response<T> = Promise<[boolean, T, AxiosResponse<T>]>
 
@@ -35,9 +36,15 @@ export class Request {
   }
 
   async requestInterceptor(config: AxiosRequestConfig): Promise<any> {
+    const userStore = useUser()
     axiosCancel.addPending(config)
+
+    if (userStore.getToken.accessToken) {
+      ;(config.headers as Recordable).Authorization = `Bearer ${userStore.getToken.accessToken}`
+    }
+    // if (!userStore.getToken.accessToken) return Promise.reject("请登录")
     // 这里可以添加逻辑，如果需要的话
-    await TokenOrManager.ensureValidRefreshTokens(config)
+    // await TokenOrManager.ensureValidRefreshTokens(config)
     return config
   }
 

@@ -2,7 +2,6 @@ import { LOGIN_URL, LOGOUT_URL, REFRESH_TOKEN_URL } from "@/constants"
 import type { Login } from "@/types"
 import type { AxiosRequestConfig, AxiosResponse, AxiosHeaders } from "axios"
 import axios from "axios"
-import { userStore } from "@/stores"
 
 // 配置额外的请求头接口
 

@@ -7,5 +7,4 @@ export const login = async (data: Login) => http.post<BasicResponse>("/api/login
 export const loginOut = async () => http.get<BasicResponse>("/api/logout")
 
 // 获取用户信息
-export const getUserInfo = async (params: { _id: string }) =>
-  http.get<UserInfo>("/api/user/list", { params })
+export const getUserInfo = async () => http.get<UserInfo>("/api/user/list")

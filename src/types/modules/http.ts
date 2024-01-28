@@ -14,8 +14,8 @@ export interface Token {
 }
 
 export interface BasicResponse<T = any> {
-  code: number
-  message: string
-  status: string
+  code?: number
+  message?: string
+  status?: string
   result?: T
 }

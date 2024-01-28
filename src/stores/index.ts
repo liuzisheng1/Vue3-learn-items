@@ -1,3 +1,1 @@
-import { userStore } from "@/stores/modules/user.ts"
-
-export { userStore }
+export { useUser } from "@/stores/modules/user.ts"

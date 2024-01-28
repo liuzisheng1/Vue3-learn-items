@@ -2,6 +2,7 @@ import { defineStore } from "pinia"
 import { store } from "@/stores/store.ts"
 import { Token, UserInfo, Login } from "@/types"
 import { login, loginOut, getUserInfo } from "@/api"
+import { ACCESS_TOKEN, USER_ID } from "@/constants"
 import { ResultEnum } from "@/enum"
 import { storage } from "@/utils/storage.ts"
 
@@ -13,8 +14,8 @@ export interface IUserState {
 export const useUserStore = defineStore({
   id: "user",
   state: (): IUserState => ({
-    token: storage.get("token", {}),
-    userId: storage.get("userId", ""),
+    token: storage.get(ACCESS_TOKEN, {}),
+    userId: storage.get(USER_ID, {}),
     userInfo: {} as UserInfo
   }),
   getters: {
@@ -34,21 +35,21 @@ export const useUserStore = defineStore({
     },
     async login(params: Login) {
       const response = await login(params)
-      const { result, code } = response
+      const { result, code } = response as unknown as { result: any; code: string | number }
       if (code === ResultEnum.SUCCESS) {
         const token = {
           accessToken: result.accessToken,
           refreshToken: result.refreshToken,
           expiresIn: result.expiresIn
         }
-        storage.set("token", token)
-        storage.set("userId", result._id)
+        storage.set(ACCESS_TOKEN, token)
+        storage.set(USER_ID, result.userId)
         this.setToken(token)
       }
     },
     async getUserInfoTo() {
-      const response = await getUserInfo({ _id: this.userId })
-      const { result, code } = response
+      const response = await getUserInfo()
+      const { result, code } = response as unknown as { result: any; code: string | number }
       if (code === ResultEnum.SUCCESS) {
         this.setUserInfo(result)
       } else {
@@ -58,11 +59,14 @@ export const useUserStore = defineStore({
     },
     async loginOutTo() {
       await loginOut()
-      storage.remove("token")
-      storage.remove("userId")
+      storage.remove(ACCESS_TOKEN)
+      storage.remove(USER_ID)
       this.setUserInfo({})
     }
   }
 })
 
-export const userStore = useUserStore(store)
+// export const userStore = useUserStore(store)
+export const useUser = () => {
+  return useUserStore(store)
+}
