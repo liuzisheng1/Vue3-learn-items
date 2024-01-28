@@ -15,12 +15,15 @@ export const useUserStore = defineStore({
   id: "user",
   state: (): IUserState => ({
     token: storage.get(ACCESS_TOKEN, {}),
-    userId: storage.get(USER_ID, {}),
+    userId: "",
     userInfo: {} as UserInfo
   }),
   getters: {
     getToken(): Token {
       return this.token
+    },
+    getUserId(): string {
+      return this.userId
     },
     getUserInfo(): UserInfo {
       return this.userInfo
@@ -33,6 +36,9 @@ export const useUserStore = defineStore({
     setUserInfo(userInfo: UserInfo) {
       this.userInfo = userInfo
     },
+    setUserId(userId: string) {
+      this.userId = userId
+    },
     async login(params: Login) {
       const response = await login(params)
       const { result, code } = response as unknown as { result: any; code: string | number }
@@ -43,8 +49,8 @@ export const useUserStore = defineStore({
           expiresIn: result.expiresIn
         }
         storage.set(ACCESS_TOKEN, token)
-        storage.set(USER_ID, result.userId)
         this.setToken(token)
+        this.setUserId(result.userId)
       }
     },
     async getUserInfoTo() {
