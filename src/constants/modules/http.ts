@@ -12,3 +12,6 @@ export const ACCESS_TOKEN = "ACCESS-TOKEN" // 用户token
 export const USER_ID = "USER-ID" // user id
 export const CURRENT_USER = "CURRENT-USER" // 当前用户信息
 export const TABS_ROUTES = "TABS-ROUTES" // 标签页
+
+export const LOGIN_PATH = "/login"
+export const HOME_PATH = "/home"

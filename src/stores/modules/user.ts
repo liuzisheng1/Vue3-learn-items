@@ -1,14 +1,16 @@
 import { defineStore } from "pinia"
 import { store } from "@/stores/store.ts"
 import { Token, UserInfo, Login } from "@/types"
-import { login, loginOut, getUserInfo } from "@/api"
-import { ACCESS_TOKEN, USER_ID } from "@/constants"
+import { login, getUserInfo } from "@/api"
+import { ACCESS_TOKEN } from "@/constants"
 import { ResultEnum } from "@/enum"
 import { storage } from "@/utils/storage.ts"
+import { LOGIN_PATH } from "@/constants"
 
 export interface IUserState {
   token: Token
   userId: string
+  refreshToken: string
   userInfo: UserInfo
 }
 export const useUserStore = defineStore({
@@ -16,11 +18,15 @@ export const useUserStore = defineStore({
   state: (): IUserState => ({
     token: storage.get(ACCESS_TOKEN, {}),
     userId: "",
+    refreshToken: "",
     userInfo: {} as UserInfo
   }),
   getters: {
     getToken(): Token {
       return this.token
+    },
+    getRefreshToken(): string {
+      return this.refreshToken
     },
     getUserId(): string {
       return this.userId
@@ -32,6 +38,9 @@ export const useUserStore = defineStore({
   actions: {
     setToken(token: Token) {
       this.token = token
+    },
+    setRefreshToken(refreshToken: string) {
+      this.refreshToken = refreshToken
     },
     setUserInfo(userInfo: UserInfo) {
       this.userInfo = userInfo
@@ -49,6 +58,7 @@ export const useUserStore = defineStore({
           expiresIn: result.expiresIn
         }
         storage.set(ACCESS_TOKEN, token)
+        this.setRefreshToken(result.refreshToken)
         this.setToken(token)
         this.setUserId(result.userId)
       }
@@ -64,10 +74,13 @@ export const useUserStore = defineStore({
       return result
     },
     async loginOutTo() {
-      await loginOut()
-      storage.remove(ACCESS_TOKEN)
-      storage.remove(USER_ID)
-      this.setUserInfo({})
+      await ElMessageBox.alert("登录已失效,请重新登录", "提示", {
+        confirmButtonText: "重新登录",
+        callback: () => {
+          storage.clear()
+          window.location.href = LOGIN_PATH
+        }
+      })
     }
   }
 })

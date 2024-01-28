@@ -5,7 +5,9 @@ import {
   ACCESS_TOKEN,
   USER_ID,
   CURRENT_USER,
-  TABS_ROUTES
+  TABS_ROUTES,
+  LOGIN_PATH,
+  HOME_PATH
 } from "./modules/http"
 
 export {
@@ -15,5 +17,7 @@ export {
   ACCESS_TOKEN,
   USER_ID,
   CURRENT_USER,
-  TABS_ROUTES
+  TABS_ROUTES,
+  LOGIN_PATH,
+  HOME_PATH
 }

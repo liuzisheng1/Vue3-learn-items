@@ -38,13 +38,11 @@ export class Request {
   async requestInterceptor(config: AxiosRequestConfig): Promise<any> {
     const userStore = useUser()
     axiosCancel.addPending(config)
-
     if (userStore.getToken.accessToken) {
       ;(config.headers as Recordable).Authorization = `Bearer ${userStore.getToken.accessToken}`
     }
-    // if (!userStore.getToken.accessToken) return Promise.reject("请登录")
     // 这里可以添加逻辑，如果需要的话
-    // await TokenOrManager.ensureValidRefreshTokens(config)
+    await TokenOrManager.ensureValidRefreshTokens(config)
     return config
   }
 
@@ -57,7 +55,7 @@ export class Request {
     response && axiosCancel.removePending(response.config)
     const { status, data } = response
     if (status !== 200) return Promise.reject(data)
-    ElMessage.success("请联系管理员1")
+    ElMessage.success(data.message)
     console.log("Response Success:", response)
     return data
   }
@@ -66,14 +64,9 @@ export class Request {
     axiosCancel.removePending(error?.config)
     const { status } = error?.response || {}
     try {
-      checkStatus(status)
-      // await this.axiosInstance(error?.config)
-      // if (status === 401) {
-      //   await TokenManager.refreshTokens()
-      //   return this.axiosInstance(error?.config)
-      // }
+      await checkStatus(status)
+      await this.axiosInstance(error?.config)
     } catch (error) {
-      // await this.TokenManager.logout()
       console.error("Response Error:", error)
     }
     return Promise.reject(error)

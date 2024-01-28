@@ -1,58 +1,50 @@
-import { LOGIN_URL, LOGOUT_URL, REFRESH_TOKEN_URL } from "@/constants"
-import type { Login } from "@/types"
-import type { AxiosRequestConfig, AxiosResponse, AxiosHeaders } from "axios"
+import { REFRESH_TOKEN_URL } from "@/constants"
+import { Token } from "@/types"
+import type { AxiosRequestConfig, AxiosResponse } from "axios"
 import axios from "axios"
-
+import { useUser } from "@/stores/index.ts"
 // 配置额外的请求头接口
 
 // Token管理类
 class TokenManager {
-  // 状态属性，用于存储获取的token信息
-  private accessToken?: string
-  private refreshToken?: string
-  private expiresIn?: number
-
-  // 构造函数，初始化token信息
-  constructor() {
-    this.accessToken = undefined
-    this.refreshToken = undefined
-    this.expiresIn = undefined
+  async refreshTokens(refreshToken: string): Promise<void> {
+    const response: AxiosResponse = await axios.post(REFRESH_TOKEN_URL, {
+      refreshToken: refreshToken
+    })
+    return response.data.result
+  }
+  // 判断accessToken是否过期的方法 true 代表过期，false代表未过期
+  private isAccessTokenExpired(expiresIn: number): boolean {
+    if (!expiresIn) return true
+    return Math.floor(Date.now() / 1000) < expiresIn
   }
 
-  // 刷新token方法，通过refreshToken获取新的accessToken
-  async refreshTokens(): Promise<void> {
-    try {
-      const response: AxiosResponse = await axios.post(REFRESH_TOKEN_URL, {
-        refreshToken: this.refreshToken
-      })
-      this.accessToken = response.data.result.accessToken
-      this.expiresIn = response.data.result.expiresIn ?? 0
-    } catch (error) {
-      console.error("Refresh tokens failed:", error)
-      throw new Error("Refresh tokens failed")
+  async validateTokens(tokens: Token) {
+    if (!tokens.refreshToken || !tokens.accessToken || !tokens.expiresIn) {
+      await useUser().loginOutTo()
     }
   }
+  setTokens(newTokens: any) {
+    useUser().setToken(newTokens)
+  }
 
-  // 判断accessToken是否过期的方法
-  private isAccessTokenExpired(): boolean {
-    const expirationTime = Math.floor((this.expiresIn as number) * 1000)
-    return Date.now() >= expirationTime
+  // 将访问令牌添加到请求头中
+  addAuthorizationHeader(config: AxiosRequestConfig, tokens: Token) {
+    ;(config.headers as Recordable).Authorization = `Bearer ${tokens.accessToken}`
   }
 
   // 确保请求配置中包含有效的refreshToken
-  async ensureValidRefreshTokens(config: AxiosRequestConfig | AxiosHeaders): Promise<void> {
-    if (!this.accessToken || !this.refreshToken || !this.expiresIn) {
-      throw new Error("Tokens not set")
+  async ensureValidRefreshTokens(config: AxiosRequestConfig): Promise<void> {
+    const { accessToken, expiresIn, refreshToken } = useUser().getToken
+    await this.validateTokens({ accessToken, expiresIn, refreshToken })
+    if (!this.isAccessTokenExpired(expiresIn as number)) {
+      const refreshedTokens = await this.refreshTokens(refreshToken as string)
+      const token = Object.assign({}, refreshedTokens, { refreshToken })
+      this.setTokens(token)
+      this.addAuthorizationHeader(config, token)
+    } else {
+      this.addAuthorizationHeader(config, { accessToken, expiresIn, refreshToken })
     }
-    if (this.isAccessTokenExpired()) {
-      try {
-        await this.refreshTokens()
-      } catch (error) {
-        console.error("Failed to refresh tokens:", error)
-        throw new Error("Failed to refresh tokens")
-      }
-    }
-    config.headers = { ...config.headers, Authorization: `Bearer ${this.accessToken}` }
   }
 }
 

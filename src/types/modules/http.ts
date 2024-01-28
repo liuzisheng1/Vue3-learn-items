@@ -6,7 +6,7 @@ export interface Login {
 }
 
 export interface Token {
-  expiresIn?: string
+  expiresIn?: number
   accessToken?: string
   refreshToken?: string
   refreshExpiresIn?: string

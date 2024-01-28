@@ -1,4 +1,6 @@
-export const checkStatus = (errStatus: number) => {
+import { useUser } from "@/stores/index.ts"
+export const checkStatus = async (errStatus: number) => {
+  const userStore = useUser()
   let errMessage = "未知错误"
   if (errStatus) {
     switch (errStatus) {
@@ -7,6 +9,7 @@ export const checkStatus = (errStatus: number) => {
         break
       case 401:
         errMessage = "未授权，请重新登录"
+        await userStore.loginOutTo()
         break
       case 403:
         errMessage = "拒绝访问"
@@ -44,5 +47,5 @@ export const checkStatus = (errStatus: number) => {
   } else {
     errMessage = `无法连接到服务器！`
   }
-  ElMessage.error(errMessage)
+  errStatus !== 401 && ElMessage.error(errMessage)
 }
