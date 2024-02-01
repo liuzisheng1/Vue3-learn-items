@@ -5,7 +5,6 @@ import { login, getUserInfo } from "@/api"
 import { ACCESS_TOKEN } from "@/constants"
 import { ResultEnum } from "@/enum"
 import { storage } from "@/utils/storage.ts"
-import { LOGIN_PATH } from "@/constants"
 
 export interface IUserState {
   token: Token
@@ -13,6 +12,7 @@ export interface IUserState {
   refreshToken: string
   userInfo: UserInfo
 }
+
 export const useUserStore = defineStore({
   id: "user",
   state: (): IUserState => ({
@@ -49,36 +49,51 @@ export const useUserStore = defineStore({
       this.userId = userId
     },
     async login(params: Login) {
-      const response = await login(params)
-      const { result, code } = response as unknown as { result: any; code: string | number }
-      if (code === ResultEnum.SUCCESS) {
-        const token = {
-          accessToken: result.accessToken,
-          refreshToken: result.refreshToken,
-          expiresIn: result.expiresIn
+      try {
+        const response = await login(params)
+        const { result, code } = response as unknown as { result: any; code: string | number }
+        if (code === ResultEnum.SUCCESS) {
+          const token = {
+            accessToken: result.accessToken,
+            refreshToken: result.refreshToken,
+            expiresIn: result.expiresIn
+          }
+          storage.set(ACCESS_TOKEN, token)
+          this.setRefreshToken(result.refreshToken)
+          this.setToken(token)
+          this.setUserId(result.userId)
+        } else {
+          console.error("登录失败：code = " + code)
+          // 可以考虑在这里添加一个错误处理的逻辑，比如提示用户
         }
-        storage.set(ACCESS_TOKEN, token)
-        this.setRefreshToken(result.refreshToken)
-        this.setToken(token)
-        this.setUserId(result.userId)
+      } catch (error) {
+        console.error("登录失败：", error)
+        // 对于 API 调用失败，可以考虑提示用户或者重试逻辑
       }
     },
     async getUserInfoTo() {
-      const response = await getUserInfo()
-      const { result, code } = response as unknown as { result: any; code: string | number }
-      if (code === ResultEnum.SUCCESS) {
-        this.setUserInfo(result)
-      } else {
-        throw new Error("getInfo: permissionsList must be a non-null array !")
+      try {
+        const response = await getUserInfo()
+        const { result, code } = response as unknown as { result: any; code: string | number }
+        if (code === ResultEnum.SUCCESS) {
+          this.setUserInfo(result)
+        } else {
+          throw new Error("getInfo: permissionsList must be a non-null array !")
+        }
+        return result
+      } catch (error) {
+        console.error("获取用户信息失败：", error)
+        // 对于 API 调用失败，可以考虑提示用户或者重试逻辑
+        throw error
       }
-      return result
     },
     async loginOutTo() {
+      // 重新登录应该由组件的用户交互逻辑来触发
+      // 这里应该仅负责执行登出的逻辑，而不是进行导航
       await ElMessageBox.alert("登录已失效,请重新登录", "提示", {
         confirmButtonText: "重新登录",
         callback: () => {
           storage.clear()
-          window.location.href = LOGIN_PATH
         }
       })
     }
